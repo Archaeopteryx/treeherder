@@ -65,3 +65,46 @@ class BugzillaViewSet(viewsets.ViewSet):
             return Response({"failure": message}, status=HTTP_400_BAD_REQUEST)
 
         return Response({"success": response.json()["id"]})
+
+    @action(detail=False, methods=['post'])
+    def get_similar_bugs(self, request):
+        """
+        Search for bugs with a summary similar to the given string.
+        """
+        if settings.BUGFILER_API_KEY is None:
+            return Response({"failure": "Bugzilla API key not set!"},
+                            status=HTTP_400_BAD_REQUEST)
+
+        params = request.data
+
+        url = "https://bugzilla.mozilla.org/jsonrpc.cgi"
+        headers = {
+            'Content-Type': "application/json",
+        }
+        data = {
+            'version': "1.1",
+            'method': "Bug.possible_duplicates",
+            'id': 1,
+            'params': {
+                'Bugzilla_api_token': settings.BUGFILER_API_KEY,
+                'summary': params.get("failure_line").encode("utf-8").strip(),
+                'limit': 7,
+                'include_fields': [
+                                    "id",
+                                    "summary",
+                                    "status",
+                                    "resolution"
+                                  ]
+            }
+        }
+
+        try:
+            response = make_request(url, method='POST', headers=headers, json=data)
+        except requests.exceptions.HTTPError as e:
+            try:
+                message = e.response.json()['message']
+            except (ValueError, KeyError):
+                message = e.response.text
+            return Response({"failure": message}, status=HTTP_400_BAD_REQUEST)
+
+        return Response({"success": response.json()["result"]["bugs"]})

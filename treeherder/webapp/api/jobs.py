@@ -353,6 +353,18 @@ class JobsViewSet(viewsets.ViewSet):
         return Response(get_error_summary(job))
 
     @action(detail=True, methods=['get'])
+    def bug_suggestions2(self, request, project, pk=None):
+        """
+        Gets a set of bug suggestions for this job
+        """
+        try:
+            job = Job.objects.get(repository__name=project, id=pk)
+        except ObjectDoesNotExist:
+            return Response("No job with id: {0}".format(pk), status=HTTP_404_NOT_FOUND)
+
+        return Response(get_error_summary(job))
+
+    @action(detail=True, methods=['get'])
     def similar_jobs(self, request, project, pk=None):
         """
         Get a list of jobs similar to the one selected.

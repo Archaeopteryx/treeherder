@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBug } from '@fortawesome/free-solid-svg-icons';
+import { faAlignLeft } from '@fortawesome/free-solid-svg-icons';
 
 import { thBugSuggestionLimit } from '../../../../helpers/constants';
 
@@ -22,12 +23,19 @@ export default class SuggestionsListItem extends React.Component {
   };
 
   render() {
-    const { suggestion, toggleBugFiler } = this.props;
+    const { suggestion, toggleBugFiler, getBzSuggestions } = this.props;
     const { suggestionShowMore } = this.state;
 
     return (
       <li>
         <div>
+          <span
+            className="btn btn-xs btn-light-bordered link-style"
+            onClick={() => getBzSuggestions(suggestion)}
+            title="get Bugzilla suggestions for this failure"
+          >
+            <FontAwesomeIcon icon={faAlignLeft} title="Get Bugzilla suggestions for this failure" />
+          </span>
           <span
             className="btn btn-xs btn-light-bordered link-style"
             onClick={() => toggleBugFiler(suggestion)}
@@ -89,4 +97,5 @@ export default class SuggestionsListItem extends React.Component {
 SuggestionsListItem.propTypes = {
   suggestion: PropTypes.object.isRequired,
   toggleBugFiler: PropTypes.func.isRequired,
+  getBzSuggestions: PropTypes.func.isRequired,
 };

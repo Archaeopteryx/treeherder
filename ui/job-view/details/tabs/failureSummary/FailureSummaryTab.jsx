@@ -5,7 +5,7 @@ import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 import { thEvents } from '../../../../helpers/constants';
 import { isReftest } from '../../../../helpers/job';
-import { getBugUrl } from '../../../../helpers/url';
+import { bzBaseUrl, getBugUrl } from '../../../../helpers/url';
 import { withSelectedJob } from '../../../context/SelectedJob';
 import { withPinnedJobs } from '../../../context/PinnedJobs';
 import BugFiler from '../../BugFiler';
@@ -46,6 +46,26 @@ class FailureSummaryTab extends React.Component {
     window.open(getBugUrl(data.success));
   };
 
+  getBzSuggestionsForLine = async (suggestion) => {
+    const suggestionsLimit = 7;
+    const bzResponse = await fetch(
+      `${bzBaseUrl}rest/bug/possible_duplicates?limit=${suggestionsLimit}` +
+        `&include_fields=id,summary,status,resolution` +
+        `&summary=${encodeURIComponent(suggestion["search"])}`,
+    );
+    const data = await bzResponse.json();
+    if (bzResponse.ok) {
+      console.log(data);
+    } else {
+      this.submitFailure(
+        'Failure getting suggestions from Bugzilla',
+        bzResponse.status,
+        bzResponse.statusText,
+        data,
+      );
+    }
+  };
+
   render() {
     const {
       jobLogUrls,
@@ -70,6 +90,7 @@ class FailureSummaryTab extends React.Component {
               index={index}
               suggestion={suggestion}
               toggleBugFiler={() => this.fileBug(suggestion)}
+              getBzSuggestions={() => this.getBzSuggestionsForLine(suggestion)}
             />
           ))}
 
