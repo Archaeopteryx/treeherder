@@ -23,7 +23,7 @@ export default class SuggestionsListItem extends React.Component {
   };
 
   render() {
-    const { suggestion, toggleBugFiler, getBzSuggestions } = this.props;
+    const { suggestion, toggleBugFiler, bzSuggestions, getBzSuggestions } = this.props;
     const { suggestionShowMore } = this.state;
 
     return (
@@ -45,6 +45,15 @@ export default class SuggestionsListItem extends React.Component {
           </span>
           <span>{suggestion.search}</span>
         </div>
+
+        {/* <!--Bugs suggested by Bugzilla, currently on manual user request--> */}
+        {bzSuggestions && bzSuggestions.bugs && (
+          <ul className="list-unstyled failure-summary-bugs">
+            {suggestion.bugs.map(bug => (
+              <BugListItem key={bug.id} bug={bug} suggestion={bug.summary} />
+            ))}
+          </ul>
+        )}
 
         {/* <!--Open recent bugs--> */}
         {suggestion.valid_open_recent && (

@@ -56,6 +56,9 @@ class FailureSummaryTab extends React.Component {
     const data = await bzResponse.json();
     if (bzResponse.ok) {
       console.log(data);
+      this.setState({
+        bzSuggestions: bzResponse,
+      });
     } else {
       this.submitFailure(
         'Failure getting suggestions from Bugzilla',
