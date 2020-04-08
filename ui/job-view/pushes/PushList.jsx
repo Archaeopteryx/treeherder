@@ -13,6 +13,7 @@ import {
 } from '../redux/stores/selectedJob';
 import {
   fetchPushes,
+  fetchNewerPushes,
   fetchNextPushes,
   updateRange,
   pollPushes,
@@ -124,6 +125,7 @@ class PushList extends React.Component {
       filterModel,
       pushList,
       loadingPushes,
+      fetchNewerPushes,
       fetchNextPushes,
       getAllShownJobs,
       jobsLoaded,
@@ -145,6 +147,23 @@ class PushList extends React.Component {
         id="push-list"
         onClick={evt => this.clearIfEligibleTarget(evt.target)}
       >
+        <div className="card card-body get-newer">
+          <span>get newer:</span>
+          <div className="btn-group">
+            {[10, 20, 50].map(count => (
+              <Button
+                color="darker-secondary"
+                outline
+                className="btn-light-bordered"
+                onClick={() => fetchNewerPushes(count)}
+                key={count}
+                data-testid={`get-newer-${count}`}
+              >
+                {count}
+              </Button>
+            ))}
+          </div>
+        </div>
         {jobsLoaded && <span className="hidden ready" />}
         {repoName &&
           pushList.map(push => (
@@ -210,6 +229,7 @@ PushList.propTypes = {
   user: PropTypes.object.isRequired,
   filterModel: PropTypes.object.isRequired,
   pushList: PropTypes.array.isRequired,
+  fetchNewerPushes: PropTypes.func.isRequired,
   fetchNextPushes: PropTypes.func.isRequired,
   fetchPushes: PropTypes.func.isRequired,
   pollPushes: PropTypes.func.isRequired,
@@ -257,6 +277,7 @@ export default connect(mapStateToProps, {
   notify,
   clearSelectedJob,
   setSelectedJobFromQueryString,
+  fetchNewerPushes,
   fetchNextPushes,
   fetchPushes,
   updateRange,

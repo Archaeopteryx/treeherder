@@ -219,7 +219,7 @@ export const fetchPushes = (
       // these params here do not affect the params on the location bar.
       delete options.fromchange;
       delete options.tochange;
-      options.push_timestamp__lte = oldestPushTimestamp;
+      options.push_timestamp__gte = oldestPushTimestamp;
     }
     if (!options.fromchange) {
       options.count = count;
@@ -290,6 +290,30 @@ export const pollPushes = () => {
       }
     }
   };
+};
+
+/**
+ * Get the next batch of newer pushes based on our current offset.
+ */
+export const fetchNewerPushes = count => {
+  const params = getAllUrlParams();
+
+  if (params.has('revision')) {
+    // We are viewing a single revision, but the user has asked for more.
+    // So we must replace the ``revision`` param with ``tochange``, which
+    // will make it just the top of the range.  We will also then get a new
+    // ``fromchange`` param after the fetch.
+    const revision = params.get('revision');
+    params.delete('revision');
+    params.set('fromchange', revision);
+  } else if (params.has('enddate')) {
+    // We are fetching more pushes, so we don't want to limit ourselves by
+    // ``startdate``.  And after the fetch, ``startdate`` will be invalid,
+    // and will be replaced on the location bar by ``fromchange``.
+    params.delete('enddate');
+  }
+  replaceLocation(params);
+  return fetchPushes(count, true);
 };
 
 /**

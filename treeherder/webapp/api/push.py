@@ -158,12 +158,24 @@ class PushViewSet(viewsets.ViewSet):
             msg = "Specified count exceeds api limit: {}".format(MAX_PUSH_COUNT)
             return Response({"detail": msg}, status=HTTP_400_BAD_REQUEST)
 
+        newer_pushes_requested = (filter_params.get('push_timestamp__gt', 0) or \
+                                  filter_params.get('push_timestamp__gte', 0) or \
+                                  filter_params.get('id__gt', 0) or \
+                                  filter_params.get('id__gte', 0)) and not \
+                                 (filter_params.get('push_timestamp__lt', 0) or \
+                                  filter_params.get('push_timestamp__lte', 0) or \
+                                  filter_params.get('id__lt', 0) or \
+                                  filter_params.get('id__lte', 0))
         # we used to have a "full" parameter for this endpoint so you could
         # specify to not fetch the revision information if it was set to
         # false. however AFAIK no one ever used it (default was to fetch
         # everything), so let's just leave it out. it doesn't break
         # anything to send extra data when not required.
-        pushes = pushes.select_related('repository').prefetch_related('commits')[:count]
+        if not newer_pushes_requested:
+            pushes = pushes.select_related('repository').prefetch_related('commits')[:count]
+        else:
+            pushes = pushes.select_related('repository').prefetch_related('commits').reverse()[:count]
+            pushes = list(reversed(list(pushes)))
         serializer = PushSerializer(pushes, many=True)
 
         meta['count'] = len(pushes)
