@@ -424,6 +424,7 @@ class ErrorParser(ParserBase):
     RE_TASKCLUSTER_NORMAL_PREFIX = re.compile(r"^\[(?!taskcluster:)[^\]]*20\d{2}-[^\]]+\]\s")
 
     RE_MOZHARNESS_PREFIX = re.compile(r"^\d+:\d+:\d+ +(?:DEBUG|INFO|WARNING) - +")
+    RE_PROCESS_ID_PREFIX = re.compile(r"(?:PID \d+|GECKO\(\d+\)) \| +")
 
     def __init__(self):
         """A simple error detection sub-parser"""
@@ -483,6 +484,7 @@ class ErrorParser(ParserBase):
 
         # Remove mozharness prefixes prior to matching
         trimline = re.sub(self.RE_MOZHARNESS_PREFIX, "", line).rstrip()
+        trimline = re.sub(self.RE_PROCESS_ID_PREFIX, "", trimline)
         if self.RE_EXCLUDE_2_SEARCH.search(trimline):
             return False
 
