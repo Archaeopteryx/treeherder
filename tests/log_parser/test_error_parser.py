@@ -23,6 +23,8 @@ ERROR_TEST_CASES = (
     "remoteFailed: [Failure instance: Traceback (failure with no frames): Foo.",
     # "^g?make(?:\[\d+\])?: \*\*\*"
     "08:13:37 INFO - make: *** [test-integration-test] Error 1",
+    # "|^[ERROR: "
+    "[task 2020-04-22T17:38:56.375Z] ERROR: UI test run failed, please check above URL",
     # "mozmake\.(?:exe|EXE)(?:\[\d+\])?: \*\*\*"
     r"pymake\..\..\mozmake.exe: *** [buildsymbols] Error 11",
     # "mozmake\.(?:exe|EXE)(?:\[\d+\])?: \*\*\*"

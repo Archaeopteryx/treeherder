@@ -370,6 +370,10 @@ class ErrorParser(ParserBase):
     RE_ERR_MATCH = re.compile(
         (
             r"^g?make(?:\[\d+\])?: \*\*\*"
+            # mobile
+            r"|^ERROR: "
+            # mobile
+            r"|^fatal: "
             r"|^[A-Za-z.]+Error: "
             r"|^[A-Za-z.]*Exception: "
             r"|^\[  FAILED  \] "
