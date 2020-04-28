@@ -426,6 +426,8 @@ class ErrorParser(ParserBase):
 
     RE_MOZHARNESS_PREFIX = re.compile(r"^\d+:\d+:\d+ +(?:DEBUG|INFO|WARNING) - +")
 
+    latest_failure_line_cleaned = None
+
     def __init__(self):
         """A simple error detection sub-parser"""
         super().__init__("errors")
@@ -471,6 +473,7 @@ class ErrorParser(ParserBase):
 
         if self.is_error_line(line):
             self.add(line, lineno)
+            self.latest_failure_line_cleaned = re.sub(self.RE_MOZHARNESS_PREFIX, "", line).rstrip()
 
     def is_error_line(self, line):
         if self.RE_EXCLUDE_1_SEARCH.search(line):
@@ -482,6 +485,10 @@ class ErrorParser(ParserBase):
         # Remove mozharness prefixes prior to matching
         trimline = re.sub(self.RE_MOZHARNESS_PREFIX, "", line).rstrip()
         if self.RE_EXCLUDE_2_SEARCH.search(trimline):
+            return False
+
+        # Exclude failure line identic to the previous one
+        if self.artifact and trimline == self.latest_failure_line_cleaned:
             return False
 
         return bool(
