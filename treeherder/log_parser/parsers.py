@@ -291,6 +291,13 @@ class ErrorParser(ParserBase):
             r"|^abort:"
             r"|^\[taskcluster\] Error:"
             r"|^\[[\w._-]+:(?:error|exception)\]"
+            # mobile ui-test-x86 link to url with failures
+            r"^More details are available at"
+            # mobile failure summary
+            r"^FAILURE: "
+            r"^Error: Matrix failed: "
+            # mobile failure message with details
+            r"^e: /"
         )
     )
 

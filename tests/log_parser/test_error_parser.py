@@ -43,6 +43,8 @@ ERROR_TEST_CASES = (
     "20:57:49    ERROR -  make[3]: *** [widget/gtk/target-objects] Error 2",
     # "^[A-Za-z.]+Error: "
     "subprocess.CalledProcessError: Command '['/usr/bin/python3', 'doc', '--outdir', 'docs-out', '--no-open', '--no-serve', '--archive']' returned non-zero exit status 2.",
+    # "^[A-Za-z.]+Error: ", important for mobile
+    "RuntimeError: Gradle command returned error: 1",
     # "^[A-Za-z\.]*Exception: "
     "InvalidArgumentException: Unknown pointerType: [object String]",
     # "^abort: "
@@ -71,6 +73,10 @@ ERROR_TEST_CASES = (
     "2020-03-18 20:40:52 UTC 39:27.50 /builds/worker/checkouts/gecko/widget/gtk/nsWindow.cpp:3536:30: error: too few arguments to function 'const gchar* gtk_check_version(guint, guint, guint)'",
     # " error R?C\d*:"
     "src/gl.cc(2249): error C2065: 'BLEND_1': undeclared identifier",
+    # "Error: Matrix failed: "
+    "Error: Matrix failed: matrix-1gtblc8qktdfj FINISHED failure  https://console.firebase.google.com/project/moz-reference-browser-230023/testlab/histories/bh.b4e77beaed81bc1c/matrices/4658339442076415786",
+    # "^e: /"
+    "e: /builds/worker/checkouts/src/app/src/main/java/org/mozilla/reference/browser/browser/BrowserFragment.kt: (42, 17): Type mismatch: inferred type is SessionManager but BrowserStore was expected",
 )
 
 NON_ERROR_TEST_CASES = (
