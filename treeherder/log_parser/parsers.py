@@ -44,6 +44,8 @@ class ErrorParser(ParserBase):
 
     IN_SEARCH_TERMS = (
         "TEST-UNEXPECTED-",
+        # mobile repositories (fenix etc.): test-debug + ui-test tasks
+        " FAILURE: ",
         "fatal error",
         "FATAL ERROR",
         "REFTEST ERROR",
