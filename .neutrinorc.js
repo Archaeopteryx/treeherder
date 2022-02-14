@@ -95,10 +95,13 @@ module.exports = {
         },
         // Inside Docker filesystem watching has to be performed using polling mode,
         // since inotify doesn't work.
-        watchOptions: process.env.IN_DOCKER && {
+        watchFiles: process.env.IN_DOCKER && {
           // Poll only once a second and ignore the node_modules folder to keep CPU usage down.
-          poll: 1000,
-          ignored: /node_modules/,
+          options: {
+            ignored: '/node_modules/',
+            usePolling: true,
+            interval: 1000,
+          },
         },
       },
       devtool: {
