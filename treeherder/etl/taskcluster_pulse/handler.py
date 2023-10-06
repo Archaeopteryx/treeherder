@@ -107,6 +107,7 @@ def ignore_task(task, taskId, rootUrl, project):
         return True
 
     mobile_repos = (
+        'application-services',
         'fenix',
         'firefox-android',
         'reference-browser',
