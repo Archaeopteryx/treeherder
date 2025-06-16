@@ -14,7 +14,7 @@ from treeherder.intermittents_commenter.constants import (
     COMPONENTS,
     WHITEBOARD_NEEDSWORK_OWNER,
 )
-from treeherder.model.models import BugJobMap, OptionCollection
+from treeherder.model.models import BugJobMap, Bugscache, OptionCollection
 
 from . import fetch
 
@@ -42,7 +42,6 @@ class BugRunInfo:
 
 @dataclass
 class BugsDetails:
-    run_count: dict[str, int] = field(default_factory=dict)  # {job_name: run_count}
     total: int = 0
     test_variants: set = field(default_factory=set)
     per_repositories: dict[str, int] = field(default_factory=dict)  # {repo1: 1, repo2: 2, ...}
@@ -60,7 +59,6 @@ class Commenter:
     test_variants = None
     manifests = None
     testrun_matrix = None
-    summary_groups = None
 
     def __init__(self, weekly_mode, dry_run=False):
         self.weekly_mode = weekly_mode
@@ -81,7 +79,7 @@ class Commenter:
 
         bug_ids, bugs = self.get_bugs(startday, endday)
         option_collection_map = OptionCollection.objects.get_option_collection_map()
-        bug_map = self.build_bug_map(bugs, option_collection_map, startday, endday)
+        bug_map = self.build_bug_map(bugs, option_collection_map)
 
         alt_date_bug_totals = self.get_alt_date_bug_totals(alt_startday, alt_endday, bug_ids)
 
@@ -308,7 +306,6 @@ class Commenter:
                 "bug__bugzilla_id",
                 "job__option_collection_hash",
                 "job__signature__job_type_name",
-                "bug__summary",
             )
         )
         return bug_ids, bugs
@@ -388,32 +385,7 @@ class Commenter:
             info.build_type = "unknown build"
         return info
 
-    def get_task_labels_and_count(self, manifest, start_day, end_day):
-        tasks_and_count = {}
-        summary_groups = (
-            fetch.fetch_summary_groups(start_day, end_day)
-            if self.summary_groups is None
-            else self.summary_groups
-        )
-        days = [start_day]
-        if self.weekly_mode:
-            for j in range(6):
-                jj = datetime.strptime(days[-1], "%Y-%m-%d") + timedelta(days=1)
-                days.append(jj.strftime("%Y-%m-%d"))
-        for day in days:
-            if day not in summary_groups:
-                continue
-            all_task_labels = summary_groups[day]["job_type_names"]
-            for tasks_by_manifest in summary_groups[day]["manifests"]:
-                for man, tasks in tasks_by_manifest.items():
-                    if manifest == man:
-                        for task_index, _, _, count in tasks:
-                            task_label = all_task_labels[task_index]
-                            tasks_and_count.setdefault(task_label, 0)
-                            tasks_and_count[task_label] += count
-        return tasks_and_count
-
-    def build_bug_map(self, bugs, option_collection_map, start_day, end_day):
+    def build_bug_map(self, bugs, option_collection_map):
         """Build bug_map
          eg:
         {
@@ -441,30 +413,22 @@ class Commenter:
         }
         """
         bug_map = {}
+        bug_ids = [b["bug__bugzilla_id"] for b in bugs]
+        bug_summaries = Bugscache.objects.filter(bugzilla_id__in=bug_ids).values(
+            "summary", "bugzilla_id"
+        )
         all_variants = set()
-        for bug in bugs:
-            bug_id = bug["bug__bugzilla_id"]
-            all_tests = self.get_tests_from_manifests()
-            test_name = self.get_test_name(all_tests, bug["bug__summary"])
-            manifest = None
+        for bug, bug_id in zip(bugs, bug_ids):
+            manifest = self.get_test_manifest(bug_summaries.filter(bugzilla_id=bug_id))
             bug_testrun_matrix = []
-            run_count = 0
-            if test_name:
-                manifest = all_tests[test_name][0]
-                if manifest:
-                    tasks_count = self.get_task_labels_and_count(manifest, start_day, end_day)
-                    job_name = bug["job__signature__job_type_name"]
-                    for task_name, count in tasks_count.items():
-                        if task_name == job_name or task_name == job_name.rsplit("-", 1)[0]:
-                            run_count = count
-                            break
-                    testrun_matrix = (
-                        fetch.fetch_testrun_matrix()
-                        if self.testrun_matrix is None
-                        else self.testrun_matrix
-                    )
-                    self.testrun_matrix = testrun_matrix
-                    bug_testrun_matrix = testrun_matrix[manifest]
+            if manifest:
+                testrun_matrix = (
+                    fetch.fetch_testrun_matrix()
+                    if self.testrun_matrix is None
+                    else self.testrun_matrix
+                )
+                self.testrun_matrix = testrun_matrix
+                bug_testrun_matrix = testrun_matrix[manifest]
             bug_run_info = self.get_bug_run_info(bug)
             all_variants = bug_run_info.variants
             if bug_testrun_matrix and bug_run_info.os_name in bug_testrun_matrix:
@@ -483,9 +447,7 @@ class Commenter:
                 bug_infos.total = 1
                 bug_infos.test_variants |= all_variants
                 bug_infos.per_repositories[repo] = 1
-                bug_infos.data_table[platform_and_build] = {
-                    test_variant: {"count": 1, "runs": run_count},
-                }
+                bug_infos.data_table[platform_and_build] = {test_variant: 1}
                 bug_map[bug_id] = bug_infos
             else:
                 bug_infos = bug_map[bug_id]
@@ -497,7 +459,9 @@ class Commenter:
                 data_table = bug_infos.data_table
                 platform_and_build_data = data_table.get(platform_and_build, {})
                 data_table[platform_and_build] = platform_and_build_data
-                data_table[platform_and_build][test_variant] = {"count": 1, "runs": run_count}
+                data_table[platform_and_build][test_variant] = (
+                    platform_and_build_data.get(test_variant, 0) + 1
+                )
         return bug_map
 
     def get_alt_date_bug_totals(self, startday, endday, bug_ids):
@@ -566,7 +530,8 @@ class Commenter:
         test_name = test_name.split("?")[0]
         return test_name
 
-    def get_test_name(self, all_tests, summary):
+    def get_test_manifest(self, bug_summaries):
+        all_tests = self.get_tests_from_manifests()
         tv_strings = [
             " TV ",
             " TV-nofis ",
@@ -589,45 +554,49 @@ class Commenter:
             "svg",
             "mp4",
         ]
-        # ensure format we want
-        if "| single tracking bug" not in summary:
-            return None
-        # ignore chrome://, file://, resource://, http[s]://, etc.
-        if "://" in summary:
-            return None
-        # ignore test-verify as these run only on demand when the specific test is modified
-        if any(k for k in tv_strings if k.lower() in summary.lower()):
-            return None
-        # now parse and try to find file in list of tests
-        if any(k for k in test_file_extensions if f"{k} | single" in summary):
-            if " (finished)" in summary:
-                summary = summary.replace(" (finished)", "")
-            # get <test_name> from: "TEST-UNEXPECTED-FAIL | <test_name> | single tracking bug"
-            # TODO: fix reftest
-            test_name = summary.split("|")[-2].strip()
-            if " == " in test_name or " != " in test_name:
-                test_name = test_name.split(" ")[0]
-            else:
-                test_name = test_name.split(" ")[-1]
-            # comm/ is thunderbird, not in mozilla-central repo
-            # "-ref" is related to a reftest reference file, not what we want to target
-            # if no <path>/<filename>, then we won't be able to find in repo, ignore
-            if test_name.startswith("comm/") or "-ref" in test_name or "/" not in test_name:
-                return None
-            # handle known WPT mapping
-            if test_name.startswith("/") or test_name.startswith("mozilla/tests"):
-                test_name = self.fix_wpt_name(test_name)
-            if test_name not in all_tests:
-                # try reftest:
-                if f"layout/reftests/{test_name}" in all_tests:
-                    test_name = f"layout/reftests/{test_name}"
+        for bug_summary_dict in bug_summaries:
+            summary = bug_summary_dict["summary"]
+            # ensure format we want
+            if "| single tracking bug" not in summary:
+                continue
+            # ignore chrome://, file://, resource://, http[s]://, etc.
+            if "://" in summary:
+                continue
+            # ignore test-verify as these run only on demand when the specific test is modified
+            if any(k for k in tv_strings if k.lower() in summary.lower()):
+                continue
+            # now parse and try to find file in list of tests
+            if any(k for k in test_file_extensions if f"{k} | single" in summary):
+                if " (finished)" in summary:
+                    summary = summary.replace(" (finished)", "")
+                # get <test_name> from: "TEST-UNEXPECTED-FAIL | <test_name> | single tracking bug"
+                # TODO: fix reftest
+                test_name = summary.split("|")[-2].strip()
+                if " == " in test_name or " != " in test_name:
+                    test_name = test_name.split(" ")[0]
                 else:
-                    # unknown test
-                    # TODO: we get here for a few reasons:
-                    # 1) test has moved in the source tree
-                    # 2) test has typo in summary
-                    # 3) test has been deleted from the source tree
-                    # 4) sometimes test was deleted but is valid on beta
-                    return None
-            return test_name
+                    test_name = test_name.split(" ")[-1]
+                # comm/ is thunderbird, not in mozilla-central repo
+                # "-ref" is related to a reftest reference file, not what we want to target
+                # if no <path>/<filename>, then we won't be able to find in repo, ignore
+                if test_name.startswith("comm/") or "-ref" in test_name or "/" not in test_name:
+                    continue
+                # handle known WPT mapping
+                if test_name.startswith("/") or test_name.startswith("mozilla/tests"):
+                    test_name = self.fix_wpt_name(test_name)
+                if test_name not in all_tests:
+                    # try reftest:
+                    if f"layout/reftests/{test_name}" in all_tests:
+                        test_name = f"layout/reftests/{test_name}"
+                    else:
+                        # unknown test
+                        # TODO: we get here for a few reasons:
+                        # 1) test has moved in the source tree
+                        # 2) test has typo in summary
+                        # 3) test has been deleted from the source tree
+                        # 4) sometimes test was deleted but is valid on beta
+                        continue
+                # matching test- we can access manifest
+                manifest = all_tests[test_name]
+                return manifest[0]
         return None
