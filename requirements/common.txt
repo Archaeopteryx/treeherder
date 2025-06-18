@@ -1834,9 +1834,9 @@ uritemplate==4.2.0 \
     --hash=sha256:480c2ed180878955863323eea31b0ede668795de182617fef9c6ca09e6ec9d0e \
     --hash=sha256:962201ba1c4edcab02e60f9a0d3821e82dfc5d2d6662a21abd533879bdb8a686
     # via -r requirements/common.in
-urllib3==1.26.18 \
-    --hash=sha256:34b97092d7e0a3a8cf7cd10e386f401b3737364026c45e622aa02903dffe0f07 \
-    --hash=sha256:f8ecc1bba5667413457c529ab955bf8c67b45db799d159066261719e328580a0
+urllib3==2.4.0 \
+    --hash=sha256:414bc6535b787febd7567804cc015fee39daab8ad86268f1310a9250697de466 \
+    --hash=sha256:4e16665048960a0900c702d4a66415956a584919c03361cac9f1df5c5dd7e813
     # via
     #   botocore
     #   requests
