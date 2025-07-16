@@ -14,6 +14,10 @@ attrs==23.2.0 \
     # via
     #   outcome
     #   trio
+backports-asyncio-runner==1.2.0 \
+    --hash=sha256:0da0a936a8aeb554eccb426dc55af3ba63bcdc69fa1a600b5bb305413a4477b5 \
+    --hash=sha256:a5aa7b2b7d8f8bfcaa2b57313f70792df84e32a2a746f585213373f900b42162
+    # via pytest-asyncio
 betamax==0.9.0 \
     --hash=sha256:82316e1679bc6879e3c83318d016b54b7c9225ff08c4462de4813e22038d5f94 \
     --hash=sha256:880d6da87eaf7e61c42bdc4240f0ac04ab5365bd7f2798784c18d37d8cf747bc
@@ -361,9 +365,9 @@ pytest==8.4.0 \
     #   pytest-freezegun
     #   pytest-testmon
     #   pytest-watch
-pytest-asyncio==0.26.0 \
-    --hash=sha256:7b51ed894f4fbea1340262bdae5135797ebbe21d8638978e35d31c6d19f72fb0 \
-    --hash=sha256:c4df2a697648241ff39e7f0e4a73050b03f123f760673956cf0d72a4990e312f
+pytest-asyncio==1.1.0 \
+    --hash=sha256:5fe2d69607b0bd75c656d1211f969cadba035030156745ee09e7d71740e58ecf \
+    --hash=sha256:796aa822981e01b68c12e4827b8697108f7205020f24b5793b3c41555dab68ea
     # via -r requirements/dev.in
 pytest-cov==6.1.1 \
     --hash=sha256:46935f7aaefba760e716c2ebfbe1c216240b9592966e7da99ea8292d4d3e2a0a \
