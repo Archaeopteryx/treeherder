@@ -9931,10 +9931,10 @@ tar@^7.4.3:
     mkdirp "^3.0.1"
     yallist "^5.0.0"
 
-taskcluster-client-web@77.0.0:
-  version "77.0.0"
-  resolved "https://registry.yarnpkg.com/taskcluster-client-web/-/taskcluster-client-web-77.0.0.tgz#4f4327c0906c79be6fae572878a00bc3bf111133"
-  integrity sha512-WE+oyVJ3oqa87LX+4PsCZbES5hYjvTSgxDo8OkYIH7mDm18HfB56KjyB9niMuXKmUhO1V138wUxLcbCVhHMy7w==
+taskcluster-client-web@87.1.2:
+  version "87.1.2"
+  resolved "https://registry.yarnpkg.com/taskcluster-client-web/-/taskcluster-client-web-87.1.2.tgz#e0dcad68ef01589cfbea4a68c86f8c1134c470da"
+  integrity sha512-m/sIGQPGk3P+E9Tr4IHf1DpBCi0zm0ZU1CUedB9eAZeTm2w1Q2AVMBmMzY43F/tZNYLtqdHyuXm7LUfACdTbKw==
   dependencies:
     crypto-js "^4.2.0"
     hawk "^9.0.2"
