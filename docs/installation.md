@@ -49,7 +49,7 @@ production site. You do not need to set up the Docker environment unless making 
       front-end of Treeherder, so we recommend developing against `stage` (details below)
       unless there's something data-specific that must be addressed on production.
 
-- The server will perform an initial build and then watch for new changes. Once the server is running, you can navigate to: <http://localhost:5000> to see the UI.
+- The server will perform an initial build and then watch for new changes. Once the server is running, you can navigate to: <http://localhost:5001> to see the UI.
 
   To run the unminified UI with data from the staging site instead of the production site, type:
 
