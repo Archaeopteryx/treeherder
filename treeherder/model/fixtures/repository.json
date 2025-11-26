@@ -1023,13 +1023,13 @@
     "model": "model.repository",
     "fields": {
       "dvcs_type": "git",
-      "name": "servo-master",
+      "name": "servo-main",
       "url": "https://github.com/servo/servo",
-      "branch": "master",
+      "branch": "main",
       "active_status": "active",
       "codebase": "servo",
       "repository_group": 10,
-      "description": "The Servo Parallel Browser Engine − master",
+      "description": "The Servo Parallel Browser Engine − main",
       "expire_performance_data": false,
       "tc_root_url": "https://community-tc.services.mozilla.com"
     }
@@ -1187,7 +1187,7 @@
       "dvcs_type": "git",
       "name": "webrender",
       "url": "https://github.com/servo/webrender",
-      "branch": "master",
+      "branch": "main",
       "active_status": "active",
       "codebase": "servo",
       "repository_group": 7,
@@ -1398,7 +1398,7 @@
       "active_status": "active",
       "codebase": "servo",
       "repository_group": 10,
-      "description": "The Servo Parallel Browser Engine − auto: testing PRs after review and before merging to master.",
+      "description": "The Servo Parallel Browser Engine − auto: testing PRs after review and before merging to main.",
       "expire_performance_data": false,
       "tc_root_url": "https://community-tc.services.mozilla.com"
     }
