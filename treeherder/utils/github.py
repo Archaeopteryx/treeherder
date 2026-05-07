@@ -28,13 +28,15 @@ def get_repo(owner, repo, params=None):
 
 
 def pygithub_get_repo(owner, repo):
-    return github.get_repo(f"{owner}/{repo}")
+    # Use lazy=True to avoid an unnecessary GET /repos/{owner}/{repo} request;
+    # the URL is sufficient for subsequent API calls like compare() and get_pull().
+    return github.get_repo(f"{owner}/{repo}", lazy=True)
 
 
 def compare_shas(owner, repo, base, head):
     repo = pygithub_get_repo(owner, repo)
     comparison = repo.compare(base, head)
-    return [commit for commit in comparison.get_commits()]
+    return [commit for commit in comparison.commits]
 
 
 def get_all_commits(owner, repo, params=None):
