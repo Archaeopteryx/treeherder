@@ -52,6 +52,7 @@ def mock_github_pr_commits(activate_responses):
     path = os.path.join(tests_folder, "sample_data/pulse_consumer", "github_pr_commits.json")
     with open(path) as f:
         mocked_content = f.read()
+    # PyGithub uses requests with an explicit port, so the mock URLs must include :443.
     responses.add(
         responses.GET,
         "https://api.github.com:443/repos/mozilla/test_treeherder/pulls/1692",
@@ -75,11 +76,12 @@ def mock_github_push_compare(activate_responses):
     with open(path) as f:
         mocked_content = json.load(f)
 
+    # PyGithub uses requests with an explicit :443 port and adds ?page=1&per_page=250
+    # to compare requests, so those must be reflected in the mock URLs.
     responses.add(
         responses.GET,
         "https://api.github.com:443/repos/mozilla-mobile/android-components/compare/"
-        "7285afe57ae6207fdb5d6db45133dac2053b7820..."
-        "5fdb785b28b356f50fc1d9cb180d401bb03fc1f1"
+        "7285afe57ae6207fdb5d6db45133dac2053b7820...5fdb785b28b356f50fc1d9cb180d401bb03fc1f1"
         "?page=1&per_page=250",
         json=mocked_content[0],
         status=200,
@@ -88,8 +90,7 @@ def mock_github_push_compare(activate_responses):
     responses.add(
         responses.GET,
         "https://api.github.com:443/repos/servo/servo/compare/"
-        "4c25e02f26f7536edbf23a360d56604fb9507378..."
-        "ad9bfc2a62b70b9f3dbb1c3a5969f30bacce3d74"
+        "4c25e02f26f7536edbf23a360d56604fb9507378...ad9bfc2a62b70b9f3dbb1c3a5969f30bacce3d74"
         "?page=1&per_page=250",
         json=mocked_content[1],
         status=200,
