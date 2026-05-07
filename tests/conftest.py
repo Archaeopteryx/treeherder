@@ -7,6 +7,10 @@ import time
 from os.path import dirname, join
 from unittest.mock import MagicMock
 
+# Set GITHUB_TOKEN before treeherder modules are imported to prevent an
+# AssertionError from PyGithub's Auth.Token() when the token is None.
+os.environ.setdefault("GITHUB_TOKEN", "fake-github-token-for-tests")
+
 import kombu
 import moz_measure_noise
 import pytest
