@@ -3,8 +3,18 @@ from github import Auth, Github
 from treeherder.config.settings import GITHUB_TOKEN
 from treeherder.utils.http import fetch_json
 
-auth = Auth.Token(GITHUB_TOKEN)
-github = Github(auth=auth)
+_auth = None
+_github = None
+
+
+def _get_github_client():
+    global _auth, _github
+    if _github is None:
+        if not GITHUB_TOKEN:
+            raise ValueError("GITHUB_TOKEN is not configured")
+        _auth = Auth.Token(GITHUB_TOKEN)
+        _github = Github(auth=_auth)
+    return _github
 
 
 def fetch_api(path, params=None):
@@ -28,7 +38,7 @@ def get_repo(owner, repo, params=None):
 
 
 def pygithub_get_repo(owner, repo):
-    return github.get_repo(f"{owner}/{repo}")
+    return _get_github_client().get_repo(f"{owner}/{repo}")
 
 
 def compare_shas(owner, repo, base, head):
