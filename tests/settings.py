@@ -1,5 +1,7 @@
 import os
 
+os.environ.setdefault("GITHUB_TOKEN", "test-mock-token")
+
 from treeherder.config.settings import *  # noqa: F403
 
 # Use TEST_DATABASE_URL if set, so tests hit the local Postgres container
